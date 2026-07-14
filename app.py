@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any, Optional
 
 import streamlit as st
@@ -735,43 +736,62 @@ def extract_text_from_content(content: Any) -> Optional[str]:
     return None
 
 
+
+
+
+@st.cache_resource
+def get_ibm_clients():
+    """
+    Create IBM watsonx Orchestrate clients once and reuse them
+    across Streamlit reruns.
+    """
+    run_client = instantiate_client(RunClient)
+    threads_client = instantiate_client(ThreadsClient)
+
+    return run_client, threads_client
+
+
 def call_travelmate_agent(
     travel_request: str,
 ) -> tuple[str, dict[str, Any], Optional[str], Optional[str]]:
     """
     Invoke TravelMate through IBM's official watsonx Orchestrate ADK.
 
-    This follows the same mechanism used by the successfully tested command:
-        orchestrate chat ask --agent-name TravelMate_AI_2909XT "..."
-
-    Returns:
-        agent_text,
-        raw_response,
-        thread_id,
-        run_id
+    Optimizations:
+    - Uses the configured agent ID directly.
+    - Reuses cached IBM clients.
+    - Records timing for each IBM operation.
     """
 
+    total_start = time.perf_counter()
+
     try:
-        # Resolve the exact registered agent through the active IBM environment.
-        resolved_agent_id = get_agent_id_by_name(AGENT_NAME)
+        # ----------------------------------------------------
+        # 1. USE CONFIGURED AGENT ID DIRECTLY
+        # ----------------------------------------------------
+
+        resolved_agent_id = AGENT_ID
 
         if not resolved_agent_id:
             raise RuntimeError(
-                f"Could not find IBM watsonx Orchestrate agent '{AGENT_NAME}'. "
-                "Make sure the 'travelmate' environment is active."
+                "No IBM watsonx Orchestrate agent ID is configured."
             )
 
-        # Safety check: warn through an exception if the discovered agent differs
-        # from the ID configured in Streamlit secrets.
-        if AGENT_ID and str(resolved_agent_id) != str(AGENT_ID):
-            raise RuntimeError(
-                "The active IBM environment resolved a different TravelMate agent ID.\n\n"
-                f"Resolved ID: {resolved_agent_id}\n"
-                f"Configured ID: {AGENT_ID}"
-            )
+        # ----------------------------------------------------
+        # 2. GET CACHED IBM CLIENTS
+        # ----------------------------------------------------
 
-        run_client = instantiate_client(RunClient)
-        threads_client = instantiate_client(ThreadsClient)
+        client_start = time.perf_counter()
+
+        run_client, threads_client = get_ibm_clients()
+
+        client_seconds = time.perf_counter() - client_start
+
+        # ----------------------------------------------------
+        # 3. CREATE AGENT RUN
+        # ----------------------------------------------------
+
+        create_start = time.perf_counter()
 
         run_response = run_client.create_run(
             message=travel_request,
@@ -779,6 +799,8 @@ def call_travelmate_agent(
             thread_id=None,
             capture_logs=False,
         )
+
+        create_seconds = time.perf_counter() - create_start
 
         if not isinstance(run_response, dict):
             raise RuntimeError(
@@ -795,12 +817,27 @@ def call_travelmate_agent(
                 f"Response: {run_response!r}"
             )
 
+        # ----------------------------------------------------
+        # 4. WAIT FOR AGENT COMPLETION
+        # ----------------------------------------------------
+
+        wait_start = time.perf_counter()
+
         run_status = run_client.wait_for_run_completion(run_id)
 
-        if isinstance(run_status, dict):
-            status = str(run_status.get("status", "")).strip().lower()
+        wait_seconds = time.perf_counter() - wait_start
 
-            if status in {"failed", "error", "cancelled", "canceled"}:
+        if isinstance(run_status, dict):
+            status = str(
+                run_status.get("status", "")
+            ).strip().lower()
+
+            if status in {
+                "failed",
+                "error",
+                "cancelled",
+                "canceled",
+            }:
                 raise RuntimeError(
                     "The TravelMate agent run did not complete successfully.\n\n"
                     f"Run ID: {run_id}\n"
@@ -808,7 +845,17 @@ def call_travelmate_agent(
                     f"Run status: {run_status!r}"
                 )
 
-        thread_messages_response = threads_client.get_thread_messages(thread_id)
+        # ----------------------------------------------------
+        # 5. FETCH FINAL THREAD MESSAGES
+        # ----------------------------------------------------
+
+        fetch_start = time.perf_counter()
+
+        thread_messages_response = (
+            threads_client.get_thread_messages(thread_id)
+        )
+
+        fetch_seconds = time.perf_counter() - fetch_start
 
         if isinstance(thread_messages_response, list):
             messages = thread_messages_response
@@ -820,10 +867,17 @@ def call_travelmate_agent(
         else:
             messages = []
 
+        # ----------------------------------------------------
+        # 6. FIND ASSISTANT RESPONSE
+        # ----------------------------------------------------
+
         assistant_message = None
 
         for message in reversed(messages):
-            if isinstance(message, dict) and message.get("role") == "assistant":
+            if (
+                isinstance(message, dict)
+                and message.get("role") == "assistant"
+            ):
                 assistant_message = message
                 break
 
@@ -841,15 +895,41 @@ def call_travelmate_agent(
 
         if not agent_text:
             raise RuntimeError(
-                "The IBM TravelMate agent returned an empty or unsupported response.\n\n"
+                "The IBM TravelMate agent returned an empty "
+                "or unsupported response.\n\n"
                 f"Assistant message: {assistant_message!r}"
             )
+
+        # ----------------------------------------------------
+        # 7. TIMING DIAGNOSTICS
+        # ----------------------------------------------------
+
+        total_seconds = time.perf_counter() - total_start
+
+        timing = {
+            "client_initialization_seconds": round(
+                client_seconds, 3
+            ),
+            "create_run_seconds": round(
+                create_seconds, 3
+            ),
+            "wait_for_completion_seconds": round(
+                wait_seconds, 3
+            ),
+            "fetch_messages_seconds": round(
+                fetch_seconds, 3
+            ),
+            "total_seconds": round(
+                total_seconds, 3
+            ),
+        }
 
         raw_response = {
             "agent_name": AGENT_NAME,
             "agent_id": resolved_agent_id,
             "thread_id": thread_id,
             "run_id": run_id,
+            "timing": timing,
             "run_response": run_response,
             "run_status": run_status,
             "assistant_message": assistant_message,
@@ -863,9 +943,13 @@ def call_travelmate_agent(
         )
 
     except Exception as exc:
+        total_seconds = time.perf_counter() - total_start
+
         raise RuntimeError(
-            "TravelMate AI could not complete the request through the official "
-            "IBM watsonx Orchestrate ADK.\n\n"
+            "TravelMate AI could not complete the request through "
+            "the official IBM watsonx Orchestrate ADK.\n\n"
+            f"Elapsed time before failure: "
+            f"{total_seconds:.2f} seconds\n"
             f"Error type: {type(exc).__name__}\n"
             f"Details: {exc}"
         ) from exc
