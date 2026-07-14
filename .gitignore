@@ -1,0 +1,82 @@
+# ============================================================
+# TRAVELMATE AI — GITIGNORE
+# ============================================================
+
+# ------------------------------------------------------------
+# SECRETS AND CREDENTIALS — NEVER UPLOAD TO GITHUB
+# ------------------------------------------------------------
+.streamlit/secrets.toml
+secrets.toml
+.env
+*.env
+credentials.yaml
+config.yaml
+
+# IBM watsonx Orchestrate local authentication/configuration
+.cache/
+.config/
+*.pem
+*.key
+
+# ------------------------------------------------------------
+# PYTHON CACHE
+# ------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ------------------------------------------------------------
+# VIRTUAL ENVIRONMENTS
+# ------------------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+
+# ------------------------------------------------------------
+# IDE / EDITOR FILES
+# ------------------------------------------------------------
+.vscode/
+.idea/
+
+# ------------------------------------------------------------
+# OS FILES
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ------------------------------------------------------------
+# LOGS AND TEMPORARY FILES
+# ------------------------------------------------------------
+*.log
+*.tmp
+*.temp
+
+# ------------------------------------------------------------
+# BUILD / DISTRIBUTION FILES
+# ------------------------------------------------------------
+build/
+dist/
+*.egg-info/
+
+# ------------------------------------------------------------
+# TEST AND DIAGNOSTIC FILES
+# Optional: keeps our temporary debugging scripts out of GitHub
+# ------------------------------------------------------------
+test_ibm_agent.py
+test_ibm_endpoints.py
+agent_client_output.txt
+real_agent_client.py
+real_chat_controller.py
+
+# Development and diagnostic files
+generate_keys.py
+real_base_client.py
+test_agent_environment.py
+test_api_host.py
+test_embed.html
+test_ibm_auth.py
+test_travelmate_agent.py
+token_server.py
+travelmate_chat.html

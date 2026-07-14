@@ -1,0 +1,10 @@
+# TravelMate AI — Python dependencies
+# Install with: pip install -r requirements.txt
+
+streamlit>=1.35.0
+
+# HTTP client — used for future IBM watsonx Orchestrate API integration
+requests>=2.31.0
+
+# Environment variable management (optional helper for local development)
+python-dotenv>=1.0.0
