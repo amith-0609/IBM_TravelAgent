@@ -1,136 +1,284 @@
 # ✈️ TravelMate AI
+### Your Intelligent Agentic AI Travel Planning Assistant
 
-> **Your Intelligent Agentic AI Travel Planning Assistant**
+TravelMate AI is an **Agentic AI-powered travel planning assistant** built using **IBM watsonx Orchestrate**, **IBM Cloud**, **Python**, and **Streamlit**. It allows users to generate personalized travel itineraries by providing travel details such as destination, origin, duration, budget, travel style, interests, and special requirements.
 
-TravelMate AI is an Agentic AI-powered travel planning assistant built on **IBM watsonx Orchestrate**. It collects your travel preferences through a clean Streamlit interface, builds a structured travel request, and forwards it to the watsonx Orchestrate agent to generate a fully personalised, end-to-end itinerary.
+The application securely communicates with a deployed **IBM watsonx Orchestrate Agent** using the official **IBM watsonx Orchestrate ADK**, which intelligently generates complete travel plans including accommodation suggestions, transportation guidance, local food recommendations, budget estimation, safety tips, and hidden gems.
 
 ---
 
-## 🛠️ Technology Stack
+# 🛠️ Technology Stack
 
 | Technology | Role |
-|---|---|
-| **IBM watsonx Orchestrate** | Agentic AI backbone — orchestrates all planning tools and sub-agents |
-| **IBM Cloud** | Scalable enterprise cloud hosting the AI services |
-| **IBM Bob** | AI developer assistant used to build and iterate on TravelMate AI |
-| **RAG Knowledge Base** | Retrieval-Augmented Generation for contextual travel knowledge |
-| **Exa Web Search** | Real-time web search for up-to-date travel information *(when available)* |
-| **Streamlit** | Python-based frontend framework |
+|------------|------|
+| IBM watsonx Orchestrate | Agentic AI engine for intelligent itinerary generation |
+| IBM Cloud | Cloud platform hosting watsonx Orchestrate services |
+| IBM watsonx Orchestrate ADK | Official SDK for securely invoking the TravelMate AI Agent |
+| IBM Bob | AI developer assistant used during development |
+| Python | Backend application logic |
+| Streamlit | Interactive web application frontend |
+| GitHub | Source code management and version control |
+| Streamlit Community Cloud | Public deployment platform |
 
 ---
 
-## 🚀 Getting Started
+# 🚀 Live Demo
 
-### Prerequisites
+### 🌐 Public Application
+
+https://travelmateaiibm.streamlit.app
+
+### 💻 GitHub Repository
+
+https://github.com/amith-0609/IBM_TravelAgent
+
+---
+
+# 🚀 Getting Started
+
+## Prerequisites
 
 - Python 3.9 or higher
 - pip
 
-### 1. Clone the repository
+---
+
+## 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/travelmate-ai.git
-cd travelmate-ai
+git clone https://github.com/amith-0609/IBM_TravelAgent.git
+
+cd IBM_TravelAgent
 ```
 
-### 2. Create a virtual environment (recommended)
+---
+
+## 2. Create a virtual environment (recommended)
 
 ```bash
 python -m venv venv
+```
 
-# macOS / Linux
+### macOS / Linux
+
+```bash
 source venv/bin/activate
+```
 
-# Windows
+### Windows
+
+```bash
 venv\Scripts\activate
 ```
 
-### 3. Install dependencies
+---
+
+## 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+---
 
-Create a `.env` file in the project root (never commit this file):
+## 4. Configure IBM watsonx Orchestrate
+
+Create either a `.env` file (for local development) or configure **Streamlit Secrets** when deploying.
 
 ```env
-WATSONX_AGENT_URL=https://your-watsonx-orchestrate-endpoint
-WATSONX_API_KEY=your_api_key_here
+WATSONX_ORCHESTRATE_API_KEY=your_api_key
+
+WATSONX_ORCHESTRATE_URL=https://your-instance-url
+
+WATSONX_ORCHESTRATE_AGENT_ID=your_agent_id
 ```
 
-> ⚠️ **Never hardcode API keys or secrets in source code.**  
-> Use environment variables or [Streamlit Secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management) (`st.secrets`) for all credentials.
+> ⚠️ Never hardcode API keys or secrets into the source code.
+>
+> Use **environment variables** or **Streamlit Secrets** for secure credential management.
 
-### 5. Run the application
+---
+
+## 5. Run the application
 
 ```bash
 streamlit run app.py
 ```
 
-The app will open automatically at `http://localhost:8501`.
-
----
-
-## 📋 Features
-
-- **Destination & Origin** — specify where you're going and where you're starting from
-- **Trip Duration** — number of days for the trip
-- **Travelers** — total headcount
-- **Budget & Currency** — full budget with currency selector (INR, USD, EUR, GBP, JPY, AUD, Other)
-- **Travel Type** — Solo / Couple / Family / Friends / Student / Business
-- **Travel Style** — Budget / Moderate / Luxury / Adventure / Relaxation / Cultural / Eco-friendly
-- **Travel Interests** — multi-select from 12 interest categories
-- **Special Requirements** — free-text for accessibility, dietary needs, or any custom requests
-- **Input Validation** — clear error messages for missing or invalid inputs
-- **Structured Request Generation** — produces a formatted request string ready for the agent API
-
----
-
-## 🗂️ Project Structure
+The application opens at:
 
 ```
-travelmate-ai/
-├── app.py              # Main Streamlit application
-├── requirements.txt    # Python dependencies
-├── README.md           # Project documentation
-└── .env                # Local secrets (⚠️ do NOT commit)
+http://localhost:8501
 ```
 
 ---
 
-## 🔗 API Integration (Coming Soon)
+# 📋 Features
 
-The generated travel request is already structured for forwarding to the IBM watsonx Orchestrate agent. When the API is ready, uncomment and configure the relevant section in [`app.py`](app.py):
+✅ Personalized travel itinerary generation
 
-```python
-import os, requests
+✅ IBM watsonx Orchestrate Agent integration
 
-api_url = os.environ.get("WATSONX_AGENT_URL")
-api_key = os.environ.get("WATSONX_API_KEY")
+✅ Destination and Origin selection
 
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json",
-}
-payload = {"message": travel_request}
-response = requests.post(api_url, json=payload, headers=headers)
-st.write(response.json())
+✅ Trip duration planning
+
+✅ Budget-aware recommendations
+
+✅ Multiple travel styles
+
+- Budget
+- Moderate
+- Luxury
+- Adventure
+- Relaxation
+- Cultural
+- Eco-friendly
+
+✅ Travel types
+
+- Solo
+- Couple
+- Family
+- Friends
+- Student
+- Business
+
+✅ Interest-based itinerary generation
+
+- Local Food
+- Culture
+- Beaches
+- Adventure
+- Nature
+- Shopping
+- Nightlife
+- History
+- Wildlife
+- Wellness
+- Photography
+- Festivals
+
+✅ Special requirements support
+
+✅ Day-by-day itinerary
+
+✅ Morning, Afternoon & Evening activities
+
+✅ Accommodation suggestions
+
+✅ Local transportation guidance
+
+✅ Restaurant recommendations
+
+✅ Budget estimation
+
+✅ Practical travel tips
+
+✅ Safety considerations
+
+✅ Hidden gems
+
+---
+
+# 🗂️ Project Structure
+
+```
+IBM_TravelAgent/
+
+│── app.py                 # Main Streamlit application
+
+│── requirements.txt       # Python dependencies
+
+│── README.md              # Project documentation
+
+│── .gitignore
+
+│── assets/                # Images and screenshots (optional)
+
+└── screenshots/           # Application screenshots (optional)
 ```
 
 ---
 
-## 🤝 Contributing
+# 🤖 IBM watsonx Orchestrate Integration
 
-Contributions are welcome! Please open an issue or submit a pull request.
+TravelMate AI is fully integrated with **IBM watsonx Orchestrate** using the official **IBM watsonx Orchestrate ADK**.
+
+Application workflow:
+
+```
+User
+   │
+   ▼
+TravelMate AI (Streamlit)
+   │
+   ▼
+Travel Request Builder
+   │
+   ▼
+IBM watsonx Orchestrate ADK
+   │
+   ▼
+TravelMate AI Agent
+   │
+   ▼
+Personalized Travel Itinerary
+   │
+   ▼
+User
+```
+
+The TravelMate AI agent processes traveler preferences and generates:
+
+- Trip overview
+- Day-by-day itinerary
+- Accommodation recommendations
+- Local transportation guidance
+- Food recommendations
+- Budget estimation
+- Practical travel tips
+- Safety considerations
+- Hidden gems
 
 ---
 
-## 📄 License
+# 📈 Future Enhancements
 
-MIT License — see [LICENSE](LICENSE) for details.
+- Live flight API integration
+- Hotel booking APIs
+- Weather forecasting
+- Google Maps integration
+- Voice-enabled travel assistant
+- Multi-agent collaboration
+- Real-time booking support
+- Offline itinerary downloads
+- Multi-language support
 
 ---
 
-> Built with IBM watsonx Orchestrate, IBM Cloud, IBM Bob, and Streamlit.
+# 🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+Please feel free to open an issue or submit a pull request.
+
+---
+
+# 📄 License
+
+This project is intended for educational and demonstration purposes as part of the **IBM University Engagement Program**.
+
+---
+
+## 👨‍💻 Developed By
+
+**Amith Yakkala**
+
+IBM University Engagement Project
+
+TravelMate AI — Intelligent Agentic AI Travel Planning Assistant
+
+---
+
+### ⭐ Built with IBM watsonx Orchestrate, IBM Cloud, IBM Bob, Python, Streamlit, and GitHub.
